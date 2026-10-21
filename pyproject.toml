@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "A simple feed-forward neural network (FFNN) built with PyTorch to recognise handwritten digits"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["torch>=2.14,<3", "torchvision>=0.29,<1", "safetensors>=0.8,<1"]
+dependencies = ["torch>=2.14,<3", "torchvision>=0.29,<1", "safetensors>=0.8,<1", "matplotlib"]
 
 [project.scripts]
 classifier = "classifier_pytorch.cli:main"

@@ -1,17 +1,22 @@
 import argparse
-from pathlib import Path
 
-from .mnist import DEFAULT_DATA_DIR, download
+from .mnist import DEFAULT_DATA_DIR, download, explore
 
 
 def data_download(args: argparse.Namespace) -> None:
-    data_dir = args.data_dir.expanduser()
-    print(f"Preparing MNIST in {data_dir.resolve()}...")
+    print(f"Preparing MNIST in {DEFAULT_DATA_DIR.resolve()}...")
     try:
-        download(data_dir)
+        download()
     except Exception as error:
         raise SystemExit(f"Could not prepare MNIST: {error}")
     print("MNIST training and test data are ready.")
+
+
+def data_explore(args: argparse.Namespace) -> None:
+    try:
+        explore()
+    except (OSError, RuntimeError) as error:
+        raise SystemExit(f"Could not explore MNIST: {error}")
 
 
 def main() -> None:
@@ -21,16 +26,18 @@ def main() -> None:
     # data
     data_parser = commands.add_parser("data")
     data_commands = data_parser.add_subparsers(dest="data_command", required=True)
+
+    # data download
     download_parser = data_commands.add_parser(
         "download", help="Download MNIST dataset."
     )
-    download_parser.add_argument(
-        "--data-dir",
-        type=Path,
-        default=DEFAULT_DATA_DIR,
-        help="Dataset directory (default: %(default)s).",
-    )
     download_parser.set_defaults(func=data_download)
+
+    # data explore
+    explore_parser = data_commands.add_parser(
+        "explore", help="Display MNIST training images."
+    )
+    explore_parser.set_defaults(func=data_explore)
 
     # Parse arguments and execute
     args = parser.parse_args()

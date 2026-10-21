@@ -15,12 +15,12 @@ nvidia-smi
 
 # Install dependencies and the local package
 pip install -r requirements.txt
-```
 
-Download the MNIST dataset.
-
-```bash
+# Download the MNIST dataset
 classifier data download
+
+# View training examples
+classifier data explore
 ```
 
 ## FFNN
