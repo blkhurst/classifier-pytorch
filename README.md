@@ -21,6 +21,9 @@ classifier data download
 
 # View training examples
 classifier data explore
+
+# Predict one MNIST sample using random weights
+classifier predict --random --sample 0
 ```
 
 ## FFNN

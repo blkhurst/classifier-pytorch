@@ -1,6 +1,9 @@
 import argparse
 
-from .mnist import DEFAULT_DATA_DIR, download, explore
+from .device import resolve_device
+from .feedforward import FeedForward, FeedForwardConfig
+from .inference import predict
+from .mnist import DEFAULT_DATA_DIR, download, explore, load_sample
 
 
 def data_download(args: argparse.Namespace) -> None:
@@ -17,6 +20,19 @@ def data_explore(args: argparse.Namespace) -> None:
         explore()
     except (OSError, RuntimeError) as error:
         raise SystemExit(f"Could not explore MNIST: {error}")
+
+
+def predict_sample(args: argparse.Namespace) -> None:
+    from .plotting import show_prediction
+
+    image, label = load_sample(args.sample)
+    device = resolve_device()
+    model = FeedForward(FeedForwardConfig()).to(device)
+    result = predict(model, image)
+
+    print(f"Device: {device}")
+    print(f"Predicted digit: {result.digit} | True label: {label}")
+    show_prediction(image, result, label, title="Untrained model")
 
 
 def main() -> None:
@@ -38,6 +54,22 @@ def main() -> None:
         "explore", help="Display MNIST training images."
     )
     explore_parser.set_defaults(func=data_explore)
+
+    # predict
+    predict_parser = commands.add_parser("predict", help="Predict one MNIST sample.")
+    predict_parser.add_argument(
+        "--random",
+        action="store_true",
+        required=True,
+        help="Explicitly use fresh, untrained weights.",
+    )
+    predict_parser.add_argument(
+        "--sample",
+        type=int,
+        default=0,
+        help="MNIST training example index (default: 0).",
+    )
+    predict_parser.set_defaults(func=predict_sample)
 
     # Parse arguments and execute
     args = parser.parse_args()

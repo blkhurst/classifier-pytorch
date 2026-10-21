@@ -12,7 +12,7 @@ def download(data_dir: str | Path = DEFAULT_DATA_DIR) -> None:
 
 def explore(data_dir: str | Path = DEFAULT_DATA_DIR) -> None:
     """Display the first six training images."""
-    import matplotlib.pyplot as plt
+    from .plotting import show_samples
 
     data_dir = Path(data_dir).expanduser()
     try:
@@ -23,14 +23,20 @@ def explore(data_dir: str | Path = DEFAULT_DATA_DIR) -> None:
             "Run 'classifier data download' first."
         ) from error
 
-    figure, axes = plt.subplots(2, 3, figsize=(9, 6))
-    figure.suptitle("MNIST training examples")
+    show_samples(dataset)
 
-    for index, axis in enumerate(axes.flat):
-        image, label = dataset[index]
-        axis.imshow(image, cmap="gray", vmin=0, vmax=255, interpolation="nearest")
-        axis.set_title(f"Label: {label}")
-        axis.axis("off")
 
-    figure.tight_layout()
-    plt.show()
+def load_sample(index: int, data_dir: str | Path = DEFAULT_DATA_DIR):
+    """Return one training image as [1, 28, 28] floats and its correct label."""
+    from torchvision.transforms.functional import to_tensor
+
+    try:
+        dataset = MNIST(root=Path(data_dir).expanduser(), train=True, download=False)
+    except RuntimeError as error:
+        raise FileNotFoundError(
+            "MNIST training data is missing. Run 'classifier data download' first."
+        ) from error
+    if not 0 <= index < len(dataset):
+        raise ValueError(f"Sample index must be between 0 and {len(dataset) - 1}.")
+    image, label = dataset[index]
+    return to_tensor(image), label

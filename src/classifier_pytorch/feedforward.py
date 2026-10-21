@@ -15,7 +15,9 @@ class FeedForward(nn.Module):
     def __init__(self, config: FeedForwardConfig):
         super().__init__()
 
+        self.config = config
         self.layers = nn.Sequential(
+            nn.Flatten(),
             nn.Linear(config.input_size, config.hidden_units),
             nn.ReLU(),
             nn.Linear(config.hidden_units, config.output_size),
