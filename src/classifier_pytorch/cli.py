@@ -1,7 +1,8 @@
 import argparse
+import json
 import torch
 
-from .checkpoints import load_checkpoint, save_checkpoint
+from .checkpoints import inspect_checkpoint, load_checkpoint, save_checkpoint
 from .device import resolve_device
 from .feedforward import FeedForward, FeedForwardConfig
 from .inference import predict
@@ -108,6 +109,25 @@ def train_model(args: argparse.Namespace) -> None:
     print("Training complete.")
 
 
+def inspect_file(args: argparse.Namespace) -> None:
+    details = inspect_checkpoint(args.path)
+
+    print("Metadata")
+    if not details["metadata"]:
+        print("  (none)")
+    for name, value in sorted(details["metadata"].items()):
+        try:
+            value = json.loads(value)
+        except json.JSONDecodeError:
+            pass
+        print(f"{name}: {json.dumps(value, indent=2, ensure_ascii=False)}")
+
+    # Display Tensor Names, Shapes & Precision
+    print(f"\nTensors ({len(details['tensors'])})")
+    for name, tensor in details["tensors"].items():
+        print(f"{name}: shape={tensor['shape']}, dtype={tensor['dtype']}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Digit classifier")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -205,6 +225,16 @@ def main() -> None:
         "--save", metavar="PATH", help="Save a checkpoint after training completes."
     )
     train_parser.set_defaults(func=train_model)
+
+    # inspect
+    inspect_parser = commands.add_parser(
+        "inspect",
+        help="Display safetensors metadata and tensor names, shapes, and dtypes.",
+    )
+    inspect_parser.add_argument(
+        "path", metavar="PATH", help="Safetensors file to inspect."
+    )
+    inspect_parser.set_defaults(func=inspect_file)
 
     # Parse arguments and execute
     args = parser.parse_args()

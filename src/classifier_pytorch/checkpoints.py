@@ -129,3 +129,20 @@ def load_checkpoint(path: str | Path) -> Checkpoint:
     model.load_state_dict(tensors, strict=True, assign=True)
     model.eval()
     return Checkpoint(model, metadata)
+
+
+def inspect_checkpoint(path: str | Path) -> dict:
+    path = Path(path).expanduser()
+    try:
+        with safe_open(path, framework="pt", device="cpu") as file:
+            # Metadata & Tensor Details
+            tensors = {}
+            for name in sorted(file.keys()):
+                tensor = file.get_slice(name)
+                tensors[name] = {
+                    "shape": tensor.get_shape(),
+                    "dtype": tensor.get_dtype(),
+                }
+            return {"metadata": file.metadata() or {}, "tensors": tensors}
+    except SafetensorError as error:
+        raise ValueError(f"Could not read safetensors checkpoint: {error}") from error
