@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from torch import nn
 
 
-@dataclass
+@dataclass(frozen=True)
 class FeedForwardConfig:
     input_size: int = 784
     hidden_units: int = 128
