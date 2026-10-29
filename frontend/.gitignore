@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env.local
+
+# Keep frontend helpers despite the root Python lib/ ignore.
+!src/lib/

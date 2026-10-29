@@ -86,6 +86,8 @@ def train(
     validation_loader: DataLoader,
     config: TrainingConfig,
     on_epoch: Callable[[EpochMetrics], None] | None = None,
+    *,
+    evaluate_initial: bool = True,
 ) -> list[EpochMetrics]:
     """Train in place and report metrics."""
 
@@ -98,7 +100,8 @@ def train(
     loss_function = nn.CrossEntropyLoss()
 
     history = []
-    for epoch in range(config.epochs + 1):
+    first_epoch = 0 if evaluate_initial else 1
+    for epoch in range(first_epoch, config.epochs + 1):
         if epoch > 0:
             train_epoch(model, training_loader, optimizer, loss_function)
 

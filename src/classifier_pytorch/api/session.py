@@ -96,6 +96,13 @@ class TrainingSession:
             )
             model = FeedForward(FeedForwardConfig()).to(self.device)
 
+            # Publish The Fresh Model Without Evaluating Epoch Zero
+            snapshot = deepcopy(model).cpu().eval()
+            with self.lock:
+                self.model = snapshot
+                self.prediction_epoch = 0
+                self.version += 1
+
             def report_epoch(metrics: EpochMetrics):
                 if not all(
                     math.isfinite(value)
@@ -113,7 +120,10 @@ class TrainingSession:
                 if self.stop.is_set():
                     raise _TrainingStopped()
 
-            train(model, training, validation, config, on_epoch=report_epoch)
+            train(
+                model, training, validation, config,
+                on_epoch=report_epoch, evaluate_initial=False,
+            )
             with self.lock:
                 self.phase = "stopped" if self.stop.is_set() else "completed"
         except _TrainingStopped:

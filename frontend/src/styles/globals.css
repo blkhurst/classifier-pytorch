@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+/* Semantic Colours — Shared By Tailwind Classes And Charts */
+@theme static {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-background: #f6f7f3;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f0f3ed;
+  --color-border: #dfe5da;
+  --color-border-subtle: #f0f3ed;
+  --color-copy-primary: #25382e;
+  --color-copy-secondary: #627267;
+  --color-copy-muted: #849087;
+  --color-accent: #34785b;
+  --color-accent-soft: #e3efdf;
+  --color-success: #34785b;
+  --color-danger: #dc2626;
+  --color-button: #245e4b;
+  --color-button-hover: #316148;
+  --color-button-copy: #ffffff;
+  --color-bar-muted: #a5b99b;
+  --color-chart-training: #23785e;
+  --color-chart-validation: #bd7a38;
+  --color-canvas: #000000;
+  --color-ink: #ffffff;
+}
+
+/* Add .dark To <html> */
+:root {
+  color-scheme: light;
+}
+
+:root.dark {
+  color-scheme: dark;
+  --color-background: #212121;
+  --color-surface: #292929;
+  --color-surface-muted: #323232;
+  --color-border: #424242;
+  --color-border-subtle: #383838;
+  --color-copy-primary: #eeeeee;
+  --color-copy-secondary: #b4b4b4;
+  --color-copy-muted: #949494;
+  --color-accent: #a8c98e;
+  --color-accent-soft: #303f2e;
+  --color-success: #93c9a5;
+  --color-danger: #f49a8e;
+  --color-button: #a8c98e;
+  --color-button-hover: #bbd8a6;
+  --color-button-copy: #1a291e;
+  --color-bar-muted: #647f69;
+  --color-chart-training: #89c7a5;
+  --color-chart-validation: #e4b07a;
+}
+
+@layer base {
+  body {
+    @apply m-0 bg-background font-sans text-copy-primary antialiased;
+  }
+
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+
+  ::selection {
+    @apply bg-accent-soft;
+  }
+}
+
+@layer components {
+  .section-title {
+    @apply text-base font-semibold tracking-tight;
+  }
+
+  .section-grid {
+    @apply grid gap-8 md:grid-cols-[280px_minmax(0,1fr)] md:gap-12;
+  }
+}
