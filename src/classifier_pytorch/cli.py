@@ -1,8 +1,14 @@
 import argparse
+from dataclasses import asdict
 import json
 import torch
 
-from .checkpoints import inspect_checkpoint, load_checkpoint, save_checkpoint
+from .checkpoints import (
+    CheckpointMetadata,
+    inspect_checkpoint,
+    load_checkpoint,
+    save_checkpoint,
+)
 from .device import resolve_device
 from .feedforward import FeedForward, FeedForwardConfig
 from .inference import predict
@@ -99,12 +105,12 @@ def train_model(args: argparse.Namespace) -> None:
     train(model, training_loader, validation_loader, config, on_epoch=report_epoch)
 
     if args.save:
-        save_checkpoint(
-            model,
-            args.save,
-            training_config=config,
-            epochs=completed_epochs + config.epochs,
+        metadata = CheckpointMetadata(
+            model_config=asdict(model.config),
+            training_config=asdict(config),
+            completed_epochs=completed_epochs + config.epochs,
         )
+        save_checkpoint(model, metadata, args.save)
         print(f"Saved checkpoint: {args.save}")
     print("Training complete.")
 
@@ -116,10 +122,11 @@ def inspect_file(args: argparse.Namespace) -> None:
     if not details["metadata"]:
         print("  (none)")
     for name, value in sorted(details["metadata"].items()):
-        try:
-            value = json.loads(value)
-        except json.JSONDecodeError:
-            pass
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                pass
         print(f"{name}: {json.dumps(value, indent=2, ensure_ascii=False)}")
 
     # Display Tensor Names, Shapes & Precision
@@ -163,7 +170,7 @@ def main() -> None:
     weights.add_argument(
         "--load",
         metavar="PATH",
-        help="Load model weights from a safetensors checkpoint.",
+        help="Load model weights from a PyTorch (.pt) checkpoint.",
     )
     predict_parser.add_argument(
         "--sample",
@@ -222,17 +229,19 @@ def main() -> None:
         help="Resume training saved weights using the current training settings.",
     )
     train_parser.add_argument(
-        "--save", metavar="PATH", help="Save a checkpoint after training completes."
+        "--save",
+        metavar="PATH",
+        help="Save a PyTorch (.pt) checkpoint after training completes.",
     )
     train_parser.set_defaults(func=train_model)
 
     # inspect
     inspect_parser = commands.add_parser(
         "inspect",
-        help="Display safetensors metadata and tensor names, shapes, and dtypes.",
+        help="Display PyTorch or safetensors metadata and tensor names, shapes, and dtypes.",
     )
     inspect_parser.add_argument(
-        "path", metavar="PATH", help="Safetensors file to inspect."
+        "path", metavar="PATH", help="PyTorch (.pt) or safetensors file to inspect."
     )
     inspect_parser.set_defaults(func=inspect_file)
 
