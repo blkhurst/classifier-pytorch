@@ -14,6 +14,7 @@ from .feedforward import FeedForward, FeedForwardConfig
 from .inference import predict
 from .mnist import DEFAULT_DATA_DIR, download, explore, load_sample, load_batches
 from .training import EpochMetrics, TrainingConfig, train
+from .plotting import show_prediction
 
 
 def data_download(args: argparse.Namespace) -> None:
@@ -93,6 +94,10 @@ def train_model(args: argparse.Namespace) -> None:
         f"Validation examples: {len(validation_loader.dataset)}"
     )
 
+    # Load Optional Prediction Sample
+    if args.show_prediction:
+        image, label = load_sample(0)
+
     def report_epoch(metrics: EpochMetrics) -> None:
         print(
             f"Epoch {completed_epochs + metrics.epoch}/{completed_epochs + config.epochs} | "
@@ -100,6 +105,12 @@ def train_model(args: argparse.Namespace) -> None:
             f"Validation loss: {metrics.validation_loss:.4f} | "
             f"Validation accuracy: {metrics.validation_accuracy:.2%}"
         )
+
+        # Show Prediction After Each Completed Epoch
+        if args.show_prediction and metrics.epoch > 0:
+            result = predict(model, image)
+            title = f"Epoch {completed_epochs + metrics.epoch}"
+            show_prediction(image, result, label, title)
 
     # Train & Save
     train(model, training_loader, validation_loader, config, on_epoch=report_epoch)
@@ -232,6 +243,11 @@ def main() -> None:
         "--save",
         metavar="PATH",
         help="Save a PyTorch (.pt) checkpoint after training completes.",
+    )
+    train_parser.add_argument(
+        "--show-prediction",
+        action="store_true",
+        help="Show sample 0 after each training epoch.",
     )
     train_parser.set_defaults(func=train_model)
 
