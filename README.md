@@ -2,6 +2,8 @@
 
 A simple feed-forward neural network (FFNN) built with PyTorch to recognise handwritten digits, using MNIST's 60,000 training examples.
 
+<img src="./docs/frontend.webp" height="300"/>
+
 ## Getting started
 
 Find the latest stable pytorch versions [here](https://pytorch.org/get-started/locally/).
@@ -25,14 +27,11 @@ classifier data explore
 # Predict one MNIST sample using random weights
 classifier predict --random --sample 0
 
-# Train a model and save its weights and settings
-classifier train --epochs 5 --save ./model.pt
-
-# Show sample 0 and its prediction after each training epoch
-classifier train --epochs 5 --show-prediction
-
 # Predict one MNIST sample using saved weights
 classifier predict --load ./model.pt --sample 0
+
+# Train a model and save its weights and settings
+classifier train --epochs 5 --save ./model.pt
 
 # Inspect checkpoint settings and tensors
 classifier inspect ./model.pt
@@ -40,7 +39,7 @@ classifier inspect ./model.pt
 
 ### Web interface
 
-The optional frontend uses React, Vite, TypeScript and Tailwind. FastAPI serves an in-memory training session. Download MNIST using the CLI before starting.
+The optional frontend uses React, Vite, TypeScript and Tailwind. FastAPI serves an in-memory training session.
 
 ```bash
 # Install dependencies
@@ -55,29 +54,34 @@ python -m uvicorn classifier_pytorch.api.main:app --host 127.0.0.1 --port 8000
 npm --prefix frontend run dev
 ```
 
-## FFNN
+## Model (FFNN)
 
 ```
 ┌─────────────────────┐
 | 784 inputs (28x28)  |
 └─────────────────────┘
-       ↓                (784 → 128)
+       ↓ W1               (784 → 128)
 ┌─────────────────────┐
-│ Linear (128 neurons)│
+│ Linear (128 units)  │
 │ ReLU activation     │
 └─────────────────────┘
-       ↓                (128 → 10)
+       ↓ W2               (128 → 10)
 ┌─────────────────────┐
-│ Linear (10 neurons) │
+│ Linear (10 units)   │
 └─────────────────────┘
 ```
 
-The 28×28 image is flattened into 784 input values. The hidden layer is a **128-neuron linear layer** followed by a **ReLU activation**. The output layer is a **10-neuron linear layer** that produces one score (logit) for each digit from 0 to 9.
+The 28×28 image is flattened into 784 input values and passed through the Feed-Forward Neural Network (FFNN) that contains an **input layer** (784 units), one **hidden layer** (128 units) with **ReLU** activation, and an **output layer** (10 units) that produces one score (logit) for each digit from 0 to 9.
 
-## Chronological Understanding
+Each linear layer performs a matrix multiplication and adds a bias. $W_1$ uses a 128x784 weight matrix to map 784 inputs to 128 hidden values; $W_2$ uses a 10x128 weight matrix to produce 10 logits.
 
-A FFNN (feed forward neural network) is where information flows in a single direction, from the **input layer** through any **hidden layers** to the **output layer**. Our network places a nonlinear activation function between two linear layers.
+## Training
 
-```
-Linear → ReLU → Linear
-```
+Once the model has been initialised with random weights, we repeat the following steps:
+
+1. Pass the images through the model to produce logits.
+2. Calculate cross-entropy loss between the predicted distribution and the target distribution.
+3. Backpropagate the loss to calculate the gradients for each weight and bias.
+4. Use the optimizer (SGD) to step the weights and biases using these gradients and the learning rate.
+
+After each epoch, evaluate the model by calculating the average loss on both the training and validation datasets to measure improvement.
