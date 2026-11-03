@@ -6,7 +6,7 @@ A simple feed-forward neural network (FFNN) built with PyTorch to recognise hand
 
 ## Getting started
 
-Find the latest stable pytorch versions [here](https://pytorch.org/get-started/locally/).
+Find the latest stable pytorch versions [here](https://pytorch.org/get-started/locally/). The requirements use PyTorch's CUDA 13.2 build.
 
 ```bash
 python3 -m venv .venv
@@ -37,6 +37,8 @@ classifier train --epochs 5 --save ./model.pt
 classifier inspect ./model.pt
 ```
 
+If you have [uv](https://docs.astral.sh/uv/getting-started/installation/), you can optionally replace the install command with `uv pip install -r requirements.txt`.
+
 ### Web interface
 
 The optional frontend uses React, Vite, TypeScript and Tailwind. FastAPI serves an in-memory training session.
@@ -44,15 +46,14 @@ The optional frontend uses React, Vite, TypeScript and Tailwind. FastAPI serves 
 ```bash
 # Install dependencies
 source .venv/bin/activate
-pip install -e ".[web]"
+pip install -r requirements.txt -e ".[web]"
 npm --prefix frontend ci
 
-# Start the API server
-python -m uvicorn classifier_pytorch.api.main:app --host 127.0.0.1 --port 8000
-
-# Start the frontend
-npm --prefix frontend run dev
+# Start the API and frontend
+./start.sh
 ```
+
+If you have [uv](https://docs.astral.sh/uv/getting-started/installation/), you can optionally replace the install command with `uv pip install -r requirements.txt -e ".[web]"`.
 
 ## Model (FFNN)
 
